@@ -8,16 +8,17 @@ VERY IMPORTANT: Make sure your file names are in this format: moon_#.jpg
    Also -- make sure your imgae numbers go up consecutively (don't skip any numbers)
 4. Based on what you uploaded, update the number of images and the number of your first image with the two variables below
 */
-let numimgs = 10; 
+let numimgs = 5; 
 let first_image_number = 1;
 
 let INTENSITY = 0.5;
-let SHOWIMG = false;
-let PRESET = 0;
+let accumINTENSITY = 0;
+let SHOWIMG = true;
+// let PRESET = 0;
 const note = {currentNote: 0};
 
 //Code starts here (play around with it if you want lol): 
-var turtles = []; let size = 24; let numTurtles = 4; let t = 0; 
+var turtles = []; let size = 24; let numTurtles = 5; let t = 0; 
 let imgs = [], currentImgIndex = 0; 
 function preload(){
   for (let i = first_image_number; i <= first_image_number+numimgs-1; i++){
@@ -30,20 +31,33 @@ function setup() {
   createCanvas(500, 500);
   background(255);
   for (let i = 0; i < numTurtles; i++){
-    turtles[i] = new Turtle(width-10,height-10,random(TWO_PI));
+    turtles[i] = new Turtle(random(width-10),random(height-10),random(TWO_PI));
   }
-  stroke(255,90);
-  strokeWeight(5);
+  mic = new p5.AudioIn();
+  fft = new p5.FFT();
+  spectrum = fft.analyze();
+  print(spectrum);
+  mic.start();
 }
 
 function draw() {
   intesity = mouseX + mouseY;
   t+=1;
-  drawCracks(turtles);
-  turtleShape(turtles,INTENSITY);
-  displayIMG(round(map(1/INTENSITY, 1, 0, 100, 5)));
-  noiseShape();
+  drawCracks();
+  // turtleShape(INTENSITY);
+  // translate(0,height);
+  // rotate(-PI/2);
+  displayIMG(round(10));
+  // translate(0,0);
+  // noiseShape();
+  INTENSITY = mic.getLevel();
+  accumINTENSITY += INTENSITY/10;
+  // if (accumINTENSITY > 0.1) {
+  //   background(255, 10);
+  //   accumINTENSITY = 0;
+  // }
   
+  // print(accumINTENSITY);
 }
 
 function Turtle(xloc,yloc,angle){
@@ -60,8 +74,8 @@ function Turtle(xloc,yloc,angle){
 Turtle.prototype.move = function(dist){
   this.pxloc = this.xloc;
   this.pyloc = this.yloc;
-  this.xloc += dist*cos(this.angle);
-  this.yloc -= dist*sin(this.angle);
+  this.xloc += noise(t)*dist*cos(this.angle);
+  this.yloc -= noise(t)*dist*sin(this.angle);
   if (this.xloc >= width || this.xloc <= 0 || this.yloc <= 0 || this.yloc >= height) {
     this.angle += PI;
     this.xloc = this.pxloc;
@@ -75,6 +89,8 @@ Turtle.prototype.turn = function(turn_angle){
 }
 Turtle.prototype.display = function(){
   // ellipse(this.xloc,this.yloc,50,50);
+  stroke(0,90);
+  strokeWeight(5);
   line(this.xloc,this.yloc,this.pxloc,this.pyloc);
 }
 // Turtle.prototype.reset = function(){
@@ -83,25 +99,21 @@ Turtle.prototype.display = function(){
 // }
 
 
-
-function drawCracks(turtles){
-  if (PRESET == 0){
+function drawCracks(){
+  // if (PRESET == 0){
     for (let i = 0; i < numTurtles; i++){
       turtles[i].turn(random(-PI/12,PI/12));
-      turtles[i].move(random(map(INTENSITY,0,1,0,100))/8);
+      turtles[i].move(random(map(INTENSITY,0,1,0,100))*2);
     }
-  }
+  // }
 }
 
-function turtleShape(turtles,length){
-  if (PRESET ==1){
-    for (let i = 0; i < numTurtles; i++){
-      for(let j = 0; j < length; j++){
-        turtles[i].turn(random(-PI/12,PI/12));
-        turtles[i].move(random(map(INTENSITY,0,1,0,100))/8);
-      }
+function turtleShape(length){
+  // if (PRESET ==1){
+    for (let i = 0; i < length; i++){
+      drawCracks();
     }
-  }
+  // }
 }
 
 function noiseShape(){
@@ -129,13 +141,14 @@ function noiseShape(){
 
 function displayIMG(delay){
   if (SHOWIMG){
-    stroke(255,90);
-    strokeWeight(5);
+    // stroke(255,90);
+    // strokeWeight(5);
     if (frameCount%(delay) == 0){
       if (currentImgIndex > numimgs - 1) {
         currentImgIndex = 0;
       }
       image(imgs[currentImgIndex],0,0,width,height);
+      tint(255, 40);
       currentImgIndex++;
     }
   }
@@ -146,33 +159,32 @@ function midiIn(){
   // if (note.currentNote > 30){
   //   updateImage();
   // }
-  print(INTENSITY);
   INTENSITY = map(note.currentNote, 0, 127, 0, 1);
   //ellipse(random(note.currentNote*3),random(note.currentNote*3),note.currentNote,note.currentNote);
 }
 
 function keyPressed(){
-  if (keyCode === LEFT_ARROW) {
-    stroke(0,90);
-    strokeWeight(5);
-    for (let i = 0; i< numTurtles; i++){
-      turtles[i].reset(width-10,height-10,random(TWO_PI));
-    }
-    PRESET = (PRESET + 1)%3;
-  } 
-  if (keyCode === RIGHT_ARROW) {
-    INTENSITY = 0.5;
-    if (SHOWIMG){
-      background(255);
-      SHOWIMG = false;
-    } else {
-      SHOWIMG = true;
-    }
-  } 
-  if (keyCode === UP_ARROW) {
-    INTENSITY *=1.2;
-  }
-  if (keyCode === DOWN_ARROW) {
-    INTENSITY /= 1.2;
-  }
+  // if (keyCode === LEFT_ARROW) {
+  //   stroke(0,90);
+  //   strokeWeight(5);
+  //   for (let i = 0; i< numTurtles; i++){
+  //     turtles[i].reset(width-10,height-10,random(TWO_PI));
+  //   }
+  //   PRESET = (PRESET + 1)%3;
+  // } 
+  // if (keyCode === RIGHT_ARROW) {
+  //   INTENSITY = 0.5;
+  //   if (SHOWIMG){
+  //     background(255);
+  //     SHOWIMG = false;
+  //   } else {
+  //     SHOWIMG = true;
+  //   }
+  // } 
+  // if (keyCode === UP_ARROW) {
+  //   INTENSITY *=1.2;
+  // }
+  // if (keyCode === DOWN_ARROW) {
+  //   INTENSITY /= 1.2;
+  // }
 }
