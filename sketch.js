@@ -13,7 +13,7 @@ let first_image_number = 1;
 
 let INTENSITY = 0.5;
 let accumINTENSITY = 0;
-let SHOWIMG = true;
+let SHOWIMG = false;
 // let PRESET = 0;
 const note = {currentNote: 0};
 
@@ -22,7 +22,7 @@ var turtles = []; let size = 24; let numTurtles = 5; let t = 0;
 let imgs = [], currentImgIndex = 0; 
 function preload(){
   for (let i = first_image_number; i <= first_image_number+numimgs-1; i++){
-    imgs.push(loadImage(`images/${i}.jpg`));
+    imgs.push(loadImage(`./images/${i}.jpg`));
     print("loaded", i);
   }
 }
@@ -34,15 +34,16 @@ function setup() {
     turtles[i] = new Turtle(random(width-10),random(height-10),random(TWO_PI));
   }
   mic = new p5.AudioIn();
-  fft = new p5.FFT();
-  spectrum = fft.analyze();
-  print(spectrum);
   mic.start();
 }
 
 function draw() {
   intesity = mouseX + mouseY;
   t+=1;
+  // if (t == 100) {
+  //   mic = new p5.AudioIn();
+  //   mic.start();
+  // }
   drawCracks();
   // turtleShape(INTENSITY);
   // translate(0,height);
@@ -50,7 +51,9 @@ function draw() {
   displayIMG(round(10));
   // translate(0,0);
   // noiseShape();
-  INTENSITY = mic.getLevel();
+  // if (t> 110){
+    INTENSITY = mic.getLevel();
+  // }
   accumINTENSITY += INTENSITY/10;
   // if (accumINTENSITY > 0.1) {
   //   background(255, 10);
@@ -187,4 +190,7 @@ function keyPressed(){
   // if (keyCode === DOWN_ARROW) {
   //   INTENSITY /= 1.2;
   // }
+}
+function mousePressed() {
+  userStartAudio();
 }
