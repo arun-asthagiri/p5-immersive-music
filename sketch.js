@@ -13,7 +13,7 @@ let first_image_number = 1;
 
 let INTENSITY = 0.5;
 let accumINTENSITY = 0;
-let SHOWIMG = false;
+let SHOWIMG = true;
 // let PRESET = 0;
 const note = {currentNote: 0};
 
@@ -28,7 +28,7 @@ function preload(){
 }
 
 function setup() {
-  createCanvas(500, 500);
+  createCanvas(windowWidth, windowHeight);
   background(255);
   for (let i = 0; i < numTurtles; i++){
     turtles[i] = new Turtle(random(width-10),random(height-10),random(TWO_PI));
@@ -93,7 +93,7 @@ Turtle.prototype.turn = function(turn_angle){
 Turtle.prototype.display = function(){
   // ellipse(this.xloc,this.yloc,50,50);
   stroke(0,90);
-  strokeWeight(5);
+  strokeWeight(map(INTENSITY,0,1, 20, 100));
   line(this.xloc,this.yloc,this.pxloc,this.pyloc);
 }
 // Turtle.prototype.reset = function(){
@@ -151,7 +151,7 @@ function displayIMG(delay){
         currentImgIndex = 0;
       }
       image(imgs[currentImgIndex],0,0,width,height);
-      tint(255, 40);
+      tint(255, map(INTENSITY,0,1,0,255));
       currentImgIndex++;
     }
   }
