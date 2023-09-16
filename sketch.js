@@ -13,7 +13,7 @@ let first_image_number = 1;
 
 let INTENSITY = 0.5;
 let accumINTENSITY = 0;
-let SHOWIMG = true;
+let SHOWIMG = false;
 // let PRESET = 0;
 const note = {currentNote: 0};
 
@@ -36,10 +36,17 @@ function setup() {
   mic = new p5.AudioIn();
   mic.start();
 }
+let period = 200;
+let slowestPeriod = 250;
+let fastestPeriod = 5;
+INTENSITY_SENSITIVITY = 0.1
+let showThreshhold = 0.5;
+let showIndex = 0;
 
 function draw() {
+  background(255,0);
   intesity = mouseX + mouseY;
-  t+=1;
+  // t+=1;
   // if (t == 100) {
   //   mic = new p5.AudioIn();
   //   mic.start();
@@ -48,19 +55,29 @@ function draw() {
   // turtleShape(INTENSITY);
   // translate(0,height);
   // rotate(-PI/2);
-  displayIMG(round(10));
+  displayIMG(period); // range of 300 to 0
   // translate(0,0);
   // noiseShape();
   // if (t> 110){
-    INTENSITY = mic.getLevel();
-  // }
-  accumINTENSITY += INTENSITY/10;
-  // if (accumINTENSITY > 0.1) {
-  //   background(255, 10);
-  //   accumINTENSITY = 0;
+  
+  INTENSITY = mic.getLevel();
   // }
   
+  accumINTENSITY += INTENSITY/50;
+  showIndex += INTENSITY/50;
   // print(accumINTENSITY);
+  // if (frameCount%60 == 0){
+    if (accumINTENSITY > INTENSITY_SENSITIVITY && SHOWIMG) {
+      if (period > fastestPeriod+11){
+        period -= 10;
+      }
+      accumINTENSITY = 0;
+    }
+  if (showIndex > showThreshhold) {
+    SHOWIMG = true;
+  }
+  
+  // }
 }
 
 function Turtle(xloc,yloc,angle){
@@ -77,8 +94,8 @@ function Turtle(xloc,yloc,angle){
 Turtle.prototype.move = function(dist){
   this.pxloc = this.xloc;
   this.pyloc = this.yloc;
-  this.xloc += noise(t)*dist*cos(this.angle);
-  this.yloc -= noise(t)*dist*sin(this.angle);
+  this.xloc += noise(frameCount)*dist*cos(this.angle);
+  this.yloc -= noise(frameCount)*dist*sin(this.angle);
   if (this.xloc >= width || this.xloc <= 0 || this.yloc <= 0 || this.yloc >= height) {
     this.angle += PI;
     this.xloc = this.pxloc;
@@ -142,16 +159,17 @@ function noiseShape(){
   }
 }
 
-function displayIMG(delay){
+function displayIMG(period){
   if (SHOWIMG){
     // stroke(255,90);
     // strokeWeight(5);
-    if (frameCount%(delay) == 0){
+    if (frameCount%(round(period)) == 0){
       if (currentImgIndex > numimgs - 1) {
         currentImgIndex = 0;
       }
+      tint(255, map(period, 200, 10, 0, 255));
       image(imgs[currentImgIndex],0,0,width,height);
-      tint(255, map(INTENSITY,0,1,0,255));
+      
       currentImgIndex++;
     }
   }
